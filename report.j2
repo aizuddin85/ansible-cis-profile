@@ -1,0 +1,49 @@
+Section F.
+
+TASK 1: Ensure Password Fields are Not Empty.
+List of user(s) with no password (if any):
+
+{% for i in play_hosts if hostvars[i].secf_1_out  %}
+{{i}} =>
+{{hostvars[i].secf_1_out}}
+
+{% endfor %}
+======================================================
+
+TASK 2: Verify No Legacy "+" entries exist in /etc/passwd, /etc/shadow and /etc/group
+/etc/passwd (if any):
+{% for i in play_hosts if hostvars[i].secf_2a_out  %}
+{{i}} =>
+{{hostvars[i].secf_2a_out}}
+{% endfor %}
+
+/etc/shadow (if any):
+{% for i in play_hosts if hostvars[i].secf_2b_out  %}
+{{i}} =>
+{{hostvars[i].secf_2b_out}}
+{% endfor %}
+
+/etc/group (if any):
+{% for i in play_hosts if hostvars[i].secf_2c_out  %}
+{{i}} =>
+{{hostvars[i].secf_2b_out}}
+{% endfor %}
+======================================================
+
+TASK 3: Verify No UID 0 Accounts Exist Other Than root
+Account with UID 0 (if any):
+{% for i in play_hosts if hostvars[i].secf_3_out  %}
+{{i}} =>
+{{hostvars[i].secf_3_out}}
+{% endfor %}
+====================================================== 
+
+TASK 4: Ensure root PATH Integrity
+Listing of empty path "::", trailing path ":$" or "." (if any):
+{% for i in play_hosts if hostvars[i].secf_4a_out  %}
+{{i}} =>
+{{hostvars[i].secf_4a_out}}
+{% endfor %}
+
+
+

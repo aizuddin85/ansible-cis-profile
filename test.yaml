@@ -1,0 +1,12 @@
+---
+- name: test
+  hosts: localhost
+  tasks:
+    - name: create folder
+      file:
+        path: ~/test.{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}
+        state: directory
+      register: folder_info
+    - name: debung folder_info
+      debug:
+        msg:  '{{ folder_info }}'

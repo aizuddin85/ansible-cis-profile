@@ -1,0 +1,9 @@
+---
+# tasks file for prelim
+- name: create reporting folder
+  delegate_to: localhost
+  file:
+    path: "{{ report_dir}}/test.{{ lookup('pipe', 'date +%Y%m%d-%H%M') }}"
+    state: directory
+  register: folder_info
+  run_once: true

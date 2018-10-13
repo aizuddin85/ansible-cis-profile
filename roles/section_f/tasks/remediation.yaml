@@ -1,0 +1,47 @@
+---
+- name: Sec F|Remediation
+  block:
+    - name: Sec F-1 Remediate|Read user list that has no password and create scrambled user password
+      shell: echo `uuidgen | sed 's|-||g'`  | passwd --stdin "{{ item.split(':')[0] }}"
+      register: nopass_user
+      with_items: "{{ secf_1.stdout.split('\n')[0:] }}"
+      when: secf_1.stdout != ""
+
+    - name: Sec F-2-A Remediate|Remove Legacy "+" entries from /etc/passwd file
+      lineinfile:
+        path: /etc/passwd
+        regexp: "^+:"
+        state: absent
+        backup: true
+      when: secf_2a_out != ""
+
+    - name: Sec F-2-B Remediate|Remove Legacy "+" entries from /etc/shadow file
+      lineinfile:
+        path: /etc/shadow
+        regexp: "^+:"
+        state: absent
+        backup: true
+      when: secf_2b_out != ""
+
+    - name: Sec F-2-C Remediate|Remove Legacy "+" entries from /etc/group file
+      lineinfile:
+        path: /etc/group
+        regexp: "^+:"
+        state: absent
+        backup: true
+      when: secf_2c_out != ""
+
+    - name: Sec F-3 Remediate|Remove Non-Root user on UID 0
+      lineinfile:
+        path: /etc/passwd
+        regexp: "^{{ item }}"
+        state: absent
+        backup: true
+      with_items: "{{ secf_3_out }}"
+      when: secf_3_out != ""
+
+    - name: Sec F-4-A Remediate| Empty directory in PATH
+      debug:
+        msg: ":: :$ . detected in PATH!"
+      when: secf_4a_out != ""
+  when: remediate

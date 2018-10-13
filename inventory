@@ -1,0 +1,8 @@
+[haproxy]
+haproxy01.bytewise.com.my
+haproxy02.bytewise.com.my
+
+[haproxy:vars]
+ansible_ssh_user=cloud-user
+ansible_become=true
+ansible_become_user=root

@@ -1,0 +1,17 @@
+---
+- name: Execute hardening role
+  hosts: all
+  vars:
+    remediate: "true"
+    report_dir: "/root/report"
+  roles:
+    - { role: prelim }
+    - { role: section_f }
+  tasks:
+    - name: Generate run report
+      delegate_to: localhost
+      template:
+        src: report.j2
+        dest: '{{ folder_info.path }}/report.txt'
+      run_once: true 
+  
