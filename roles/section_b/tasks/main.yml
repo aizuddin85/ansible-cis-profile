@@ -1,2 +1,3 @@
 ---
-# tasks file for section_b
+- include: detection.yaml
+#- include: remediation.yaml

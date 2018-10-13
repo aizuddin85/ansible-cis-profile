@@ -1,2 +1,26 @@
 ---
 # vars file for section_b
+
+removed_pkgs:
+  - telnet-server
+  - telnet
+  - rsh-server
+  - rsh
+  - ypbind
+  - ypserv
+  - tftp
+  - tftp-server
+  - talk
+  - talk-server
+  - xinetd
+  - xorg-x11-server-common
+  - dhcp
+
+
+disabled_svcs:
+  - chargen-dgram
+  - daytime-dgram
+  - daytime-stream
+  - echo-dgram 
+  - tcpmux-server
+  - avahi-daemon

@@ -1,0 +1,65 @@
+---
+- name: Sec B-1-11,20,22 Ensure|Remove unintended pkgs 
+  yum:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ removed_pkgs }}"
+
+- name: Sec B-12-18,21 Ensure| Disable unintended services
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  with_items:
+    - "{{ disabled_svcs }}"
+  failed_when: false
+
+- name: Sec B-19 Ensure|Set Daemon umask
+  lineinfile:
+    path: /etc/sysconfig/init
+    regexp: "^umask"
+    line: 'umask 027'
+    state: present
+    backup: true
+
+- name: Sec B-23|Configure Network Time Protocol
+  block:
+    - name: Sec B-23 Ensure|Configure Network Time Protocol|Ensure ntp installed
+      yum:
+        name: ntp
+        state: present
+
+    - name: Sec B-23 Ensure|Configure Network Time Protocol|Set params restrict
+      lineinfile:
+        path: /etc/ntp.conf
+        regexp: "^restrict default"
+        line: "restrict default kod nomodify notrap nopeer noquery"
+        state: present
+        backup: true 
+    
+    - name: Sec B-23 Ensure |Configure Network Time Protocol|Set params restrict -6
+      lineinfile:
+        path: /etc/ntp.conf
+        regexp: "^restrict -6"
+        line: "restrict -6 default kod nomodify notrap nopeer noquery"
+        state: present
+        backup: true 
+
+    - name: Sec B-23|Configure Network Time Protocol| Set ntp upsteam server (jinja templating needed here for multiple ntp server!)
+      lineinfile:
+        path: /etc/ntp.conf
+        regexp: "^server"
+        line: "server {{ item }}"
+        state: present
+        backup: true 
+      with_items: " {{ ntpserver | default('localhost') }}"
+
+- name: Sec B-24|Configure Mail Transfer Agent for Local-Only Mode
+  lineinfile:
+    path: /etc/postfix/main.cf
+    regexp: "^inet_interfaces"
+    line: 'inet_interfaces = localhost'
+    state: present
+    backup: true
+  notify: restart postfix
