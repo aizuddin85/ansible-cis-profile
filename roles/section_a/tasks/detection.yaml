@@ -1,0 +1,234 @@
+---
+- name: Sec A|Detection
+  block:
+    - name: Sec A-1 Detection|Create Separate Partition for /tmp
+      shell: egrep '^/tmp' /etc/fstab
+      register: seca_1
+      failed_when: false
+      changed_when: false
+      tags:
+        - debugging
+
+    - name: Sec A-1 Detection|Read stdout
+      set_fact:
+        seca_1_out: "{{ seca_1.stdout }}"
+      tags:
+        - debugging
+        
+    - name: debugging
+      debug:
+        msg: "{{ seca_1_out }}"
+      tags:
+        - debugging
+
+    - name: Sec A-2-3-4 Ensure|nodev,nosuid,noexec option for /tmp Partition
+      mount:
+        name: "/tmp"
+        src: "{{ item.device }}"
+        state: mounted
+        fstype: "{{ item.fstype }}"
+        opts: "nodev,nosuid,noexec"
+      when: item.mount == "/tmp"
+      with_items: "{{ ansible_mounts }}"
+
+    - name: Sec A-5 Detection|Create Separate Partition for /var
+      shell: egrep '^/var' /etc/fstab
+      register: seca_5
+      failed_when: false
+      changed_when: false
+
+    - name: Sec A-5 Detection|Read stdout
+      set_fact:
+        seca_5_out: "{{ seca_5.stdout }}"
+
+    - name: Sec A-6 Ensure|Bind Mount the /var/tmp directory to /tmp
+      mount:
+        name: "/var/tmp"
+        src: "/tmp"
+        state: mounted
+        fstype: "none"
+        opts: "bind"
+      when: item.mount == "/tmp"
+      with_items: "{{ ansible_mounts }}"
+
+    - name: Sec A-7 Detection|Create Separate Partition for /var/log
+      shell: cat /etc/fstab | awk '{print $2}' | egrep -w '^/var/log$'
+      register: seca_7
+      failed_when: false
+      changed_when: false
+      
+    - name: Sec A-7 Detection|Read stdout
+      set_fact:
+        seca_7_out: "{{ seca_7.stdout }}" 
+
+    - name: Sec A-8 Detection|Create Separate Partition for /var/log/audit
+      shell: cat /etc/fstab | awk '{print $2}' | egrep -w '^/var/log/audit$'
+      register: seca_8
+      failed_when: false
+      changed_when: false
+
+    - name: Sec A-8 Detection|Read stdout
+      set_fact:
+        seca_8_out: "{{ seca_8.stdout }}" 
+
+    - name: Sec A-9 Detection|Create Separate Partition for /home
+      shell: cat /etc/fstab | awk '{print $2}' | egrep -w '^/home$'
+      register: seca_9
+      failed_when: false
+      changed_when: false
+
+    - name: Sec A-9 Detection|Read stdout
+      set_fact:
+        seca_9_out: "{{ seca_9.stdout }}" 
+    
+    - name: Sec A-10 Ensure|Add nodev Option to /home
+      mount:
+        name: "/home"
+        src: "{{ item.device }}"
+        state: mounted
+        fstype: "{{ item.fstype }}"
+        opts: "nodev"
+      when: item.mount == "/home" and remediate
+      with_items: "{{ ansible_mounts }}"
+
+    - name: Sec A-11-12-13 Ensure|nodev,nosuid,noexec option for /dev/shm Partition
+      mount:
+        name: "/dev/shm"
+        src: "{{ item.device }}"
+        state: mounted
+        fstype: "{{ item.fstype }}"
+        opts: "nodev,nosuid,noexec"
+      when: item.mount == "/dev/shm" and remediate
+      with_items: "{{ ansible_mounts }}"
+
+    - name: Sec A-14 Detection|Set Sticky Bit on All World-Writable Directories
+      shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null
+      register: seca_14
+      failed_when: false
+      changed_when: false
+
+    - name: Sec A-14 Detection|Read stdout
+      set_fact:
+        seca_14_out: "{{ seca_14.stdout }}" 
+
+    - name: Sec A-15 Ensure|Verify and Ensure Red Hat GPG Key is Installed
+      rpm_key:
+        state: present
+        key: /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+        validate_certs: true
+      when: remediate
+
+    - name: Sec A-16 Ensure|Verify and Ensure that gpgcheck is Globally Activated (Scored)
+      lineinfile:
+        state: present
+        dest: /etc/yum.conf
+        regexp: '^gpgcheck='
+        line: 'gpgcheck=1'
+      when: remediate
+
+    - name: Sec A-17 Ensure|Install AIDE
+      yum:
+        state: present
+        name: aide
+      when: remediate
+    
+    - name: Sec A-18 Ensure|Implement Periodic Execution of File Integrity
+      cron:
+        name: Implement Periodic Execution of File Integrity
+        minute: 0
+        hour: 5
+        user: root
+        job: /usr/sbin/aide –check
+        state: present
+      when: remediate
+
+    - name: Sec A-19-A Ensure| Ensure SELinux is not disabled in /boot/grub2/grub.cfg 
+      lineinfile:
+        state: absent
+        dest: /etc/grub.conf
+        line: "selinux=0"
+      when: remediate
+    
+    - name: Sec A-19-B Ensure| Ensure SELinux is not disabled in /boot/grub2/grub.cfg
+      lineinfile:
+        state: absent
+        dest: /etc/grub.conf
+        line: "enforcing=0"
+      when: remediate
+
+    - name: Sec A-20-21 Ensure | Set the SELinux State to enforcing
+      selinux:
+        state: enforcing
+        policy: targeted
+      when: remediate
+
+    - name: Sec A-22-23 Ensure|Remove SETroubleshoot and Remove MCS Translation Service (mcstrans)
+      yum:
+        state: absent
+        name:  "{{ item }}"
+      with_items:
+        - setroubleshoot
+        - mcstrans
+      when: remediate
+    
+    - name: Sec A-24 Detection|Check for Unconfined Daemons
+      shell: ps -eZ | egrep "initrc" | egrep -vw "tr|ps|egrep|bash|awk" | tr ':' ' ' | awk '{ print $NF }'  
+      register: seca_24
+      failed_when: false
+      changed_when: false
+
+    - name: Sec A-24 Detection|Read stdout
+      set_fact:
+        seca_24_out: "{{ seca_24.stdout }}"
+
+    - name: Sec A-25-26 Ensure|Set User/Group Owner on /boot/grub2/grub.cfg
+      file:
+        path: /etc/grub2.cfg
+        owner: root
+        group: root
+        mode: 0644
+      when: remediate
+
+    - name: Sec A-27 Ensure| Set Boot Loader Password
+      copy:
+        dest: /boot/grub2/user.cfg
+        mode: 0600
+        owner: root
+        group: root
+        content: "{{ bootloader_pbkdf2_passwd }}"
+      when: remediate
+
+    - name: Sec A-28-A Ensure|Restrict Core Dumps
+      lineinfile:
+        path: /etc/security/limits.conf
+        line: "* hard core 0"
+        state: present
+        insertafter: EOF
+      when: remediate
+
+    - name: Sec A-28-B Ensure|Restrict Core Dumps
+      lineinfile:
+        path: /etc/sysctl.conf
+        line: "fs.suid_dumpable = 0"
+        state: present
+        insertafter: EOF
+      notify: reload sysctl
+      when: remediate
+
+    - name: Sec A-29 Ensure|Configure ExecShield
+      lineinfile:
+        path: /etc/sysctl.conf
+        line: "kernel.exec-shield = 1"
+        state: present
+        insertafter: EOF
+      notify: reload sysctl
+      when: remediate
+
+    - name: Sec A-30 Ensure|Enable Randomized Virtual Memory Region Placement
+      lineinfile:
+        path: /etc/sysctl.conf
+        line: "kernel.randomize_va_space = 2"
+        state: present
+        insertafter: EOF
+      notify: reload sysctl
+      when: remediate

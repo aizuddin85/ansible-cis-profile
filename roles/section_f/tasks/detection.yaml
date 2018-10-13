@@ -1,62 +1,53 @@
 ---
 - name: Sec F|Detection
   block:
-    - name: Sec F-1|Looking for user that has no password in /etc/shadow
+    - name: Sec F-1 Detection|Looking for user that has no password in /etc/shadow
       shell: /bin/cat /etc/shadow | /bin/awk -F ':' '($2 == "" )'
       register: secf_1
       changed_when: false
       failed_when: false
 
-    - name: Sec F-1|Read stdout
+    - name: Sec F-1 Detection|Read stdout
       set_fact:
         secf_1_out: "{{ secf_1.stdout }}"
 
-    - name: Sec F-2-A|Verify No Legacy "+" Entries Exist in /etc/passwd file
-      command: /bin/grep '^+:' /etc/passwd
-      register: secf_2_a
-      failed_when: false
-      changed_when: false
+    - name: Sec F-2-A Ensure|Verify and Ensure No Legacy "+" Entries Exist in /etc/passwd file
+      lineinfile:
+        path: /etc/passwd
+        regexp: "^'\\+\\:'"
+        state: absent
+        backup: true
 
-    - name: Sec F-2-A|Read stdout /etc/passwd
-      set_fact:
-        secf_2a_out: "{{ secf_2_a.stdout }}"
+    - name: Sec F-2-B Ensure|Verify and Ensure No Legacy "+" Entries Exist in /etc/shadow file
+      lineinfile:
+        path: /etc/shadow
+        regexp: "^'\\+\\:'"
+        state: absent
+        backup: true
 
-    - name: Sec F-2-B|Verify No Legacy "+" Entries Exist in /etc/shadow file
-      command: /bin/grep '^+:' /etc/shadow
-      register: secf_2_b
-      failed_when: false
-      changed_when: false
+    - name: Sec F-2-C Ensure|Verify and Ensure No Legacy "+" Entries Exist in /etc/group file
+      lineinfile:
+        path: /etc/group
+        regexp: "^'\\+\\:'"
+        state: absent
+        backup: true
 
-    - name: Sec F-2-B|Read stdout /etc/shadow
-      set_fact:
-        secf_2b_out: "{{ secf_2_b.stdout }}"
-
-    - name: Sec F-2-C|Verify No Legacy "+" Entries Exist in /etc/group file
-      command: /bin/grep '^+:' /etc/group
-      register: secf_2_c
-      failed_when: false
-      changed_when: false
-
-    - name: Sec F-2-C|Read stdout /etc/group
-      set_fact:
-        secf_2c_out: "{{ secf_2_c.stdout }}"
-
-    - name: Sec F-3|Verify No UID 0 Accounts Exist Other Than root
+    - name: Sec F-3 Detection|Verify No UID 0 Accounts Exist Other Than root
       shell: /bin/cat /etc/passwd | /bin/awk -F ':' '($3 == 0) { print $1}' | egrep -v '^root'
       register: secf_3
       changed_when: false
       failed_when: false
 
-    - name: Sec F-3|Read stdout
+    - name: Sec F-3 Detection|Read stdout
       set_fact:
         secf_3_out: "{{ secf_3.stdout }}"
 
-    - name: Sec F-4|Ensure root PATH Integrity
+    - name: Sec F-4 Detection|Ensure root PATH Integrity
       shell: echo $PATH | /bin/egrep '::|:$|\.'
       register: secf_4_a
       changed_when: false
       failed_when: false
 
-    - name: Sec F-4| Read stdout
+    - name: Sec F-4 Detection| Read stdout
       set_fact:
         secf_4a_out: "{{ secf_4_a.stdout }}"

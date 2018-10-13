@@ -7,30 +7,6 @@
       with_items: "{{ secf_1.stdout.split('\n')[0:] }}"
       when: secf_1.stdout != ""
 
-    - name: Sec F-2-A Remediate|Remove Legacy "+" entries from /etc/passwd file
-      lineinfile:
-        path: /etc/passwd
-        regexp: "^+:"
-        state: absent
-        backup: true
-      when: secf_2a_out != ""
-
-    - name: Sec F-2-B Remediate|Remove Legacy "+" entries from /etc/shadow file
-      lineinfile:
-        path: /etc/shadow
-        regexp: "^+:"
-        state: absent
-        backup: true
-      when: secf_2b_out != ""
-
-    - name: Sec F-2-C Remediate|Remove Legacy "+" entries from /etc/group file
-      lineinfile:
-        path: /etc/group
-        regexp: "^+:"
-        state: absent
-        backup: true
-      when: secf_2c_out != ""
-
     - name: Sec F-3 Remediate|Remove Non-Root user on UID 0
       lineinfile:
         path: /etc/passwd

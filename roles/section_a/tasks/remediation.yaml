@@ -1,0 +1,42 @@
+---
+- name: Sec F|Remediation
+  block:
+    - name: Sec A-1 Remediate|Create Separate Partition for /tmp
+      debug:
+        msg: "{{ ansible_fqdn }} does not have separate /tmp partition.Create manually" 
+      when: seca_1_out == ""
+      changed_when: seca_1_out == ""
+
+    - name: Sec A-5 Remediate|Create Separate Partition for /var
+      debug:
+        msg: "{{ ansible_fqdn }} does not have separate /var partition.Create manually." 
+      when: seca_5_out == ""
+      changed_when: seca_5_out == ""
+
+    - name: Sec A-7 Remediate|Create Separate Partition for /var/log
+      debug:
+        msg: "{{ ansible_fqdn }} does not have separate /var/log partition.Create manually." 
+      when: seca_7_out == ""
+      changed_when: seca_7_out == ""
+    
+    - name: Sec A-8 Remediate|Create Separate Partition for /var/log/audit
+      debug:
+        msg: "{{ ansible_fqdn }} does not have separate /var/log/audit partition.Create manually." 
+      when: seca_8_out == ""
+      changed_when: seca_8_out == ""
+
+    - name: Sec A-9 Remediate|Create Separate Partition for /home
+      debug:
+        msg: "{{ ansible_fqdn }} does not have separate /home partition.Create manually." 
+      when: seca_9_out == ""
+      changed_when: seca_9_out == ""
+    
+    - name: Sec A-14 Remediation|Set Sticky Bit on All World-Writable Directories
+      shell: df --local -P | awk {'if (NR!=1) print $6'} | xargs -I '{}' find '{}' -xdev -type d \( -perm -0002 -a ! -perm -1000 \) 2>/dev/null | xargs chmod a+t
+      when: seca_14_out != ""
+
+    - name: Sec A-24 Renediation|Check for Unconfined Daemons
+      debug:
+        msg: "Unconfined daemon detected in {{ ansible_fqdn }}. Please initiate further investigation." 
+      when: seca_24_out != ""
+  when: remediate

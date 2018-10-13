@@ -1,49 +1,134 @@
-Section F.
+<html>
+<body>
+<header>
+<h1>Alliance Bank: RHEL SECURITY HARDENING CHECKLISTS v7.x Ansible HTML Report</h1>
+<h2><u><b>Section A.</b></u><br/></h2>
 
-TASK 1: Ensure Password Fields are Not Empty.
-List of user(s) with no password (if any):
+<h3><u>Sec A-1 Detection|Create Separate Partition for /tmp</u><br/></h3>
+<ul>
+{% for i in play_hosts if not hostvars[i].seca_1_out  %}
+{{i}} => <font color="red">FATAL</font>: /tmp not mounted on separate mount point!<br/>
+{% else %}
+{{i}} => <font color="green">OK</font>: /tmp mounted on separate mount point!<br>
+{% endfor %}
+</ul><br/>
 
+======================================================<br/>
+<h3><u>Sec A-2-3-4 Ensure|nodev,nosuid,noexec option for /tmp Partition</u><br/></h3>
+<ul>
+{% for i in play_hosts if not hostvars[i].seca_1_out  %}
+{{i}} => <font color="darkkhaki">WARNING</font>: Skipped due to /tmp not mounted as separate mount point!<br/>
+{% else %}
+{{i}} => <font color="blue">INFO<font/>: Ansible auto remediation if wrong state detected!<br/>
+{% endfor %}
+</ul><br/>
+
+======================================================<br/>
+<h3><u>Sec A-5 Detection|Create Separate Partition for /var</u><br/></h3>
+<ul>
+{% for i in play_hosts if not hostvars[i].seca_5_out  %}
+{{i}} => <font color="red">FATAL</font>:/var not mounted on separate mount point!<br/>
+{% else %}
+{{i}} => <font color="green">OK</font>: /var/ mounted on separate mount point!<br>
+{% endfor %}
+</ul><br/>
+
+======================================================<br/>
+<h3><u>Sec A-6 Ensure|Bind Mount the /var/tmp directory to /tmp</u><br/></h3>
+<ul>
+{% for i in play_hosts  %}
+{{i}} => <font color="blue">INFO</font>: Ansible auto remediation if wrong state detected!<br/>
+{% endfor %}
+</ul><br/>
+
+======================================================<br/>
+<h3><u>Sec A-7 Detection|Create Separate Partition for /var/log/</u><br/></h3>
+<ul>
+{% for i in play_hosts if not hostvars[i].seca_7_out  %}
+{{i}} => <font color="red">FATAL</font>: /var/log not mounted on separate mount point!<br/>
+{% else %}
+{{i}} => <font color="green">OK</font>: /var/log mounted on separate mount point!<br>
+{% endfor %}
+</ul><br/>
+
+
+======================================================<br/>
+<h3><u>Sec A-8 Detection|Create Separate Partition for /var/log/audit</u><br/></h3>
+<ul>
+{% for i in play_hosts if not hostvars[i].seca_8_out  %}
+{{i}} => <font color="red">FATAL</font>: /var/log/audit not mounted on separate mount point!<br/>
+{% else %}
+{{i}} => <font color="green">OK</font>: /var/log/audit mounted on separate mount point!<br>
+{% endfor %}
+</ul><br/>
+
+======================================================<br/>
+<h3><u>Sec A-9 Detection|Create Separate Partition for /home</u><br/></h3>
+<ul>
+{% for i in play_hosts if not hostvars[i].seca_9_out  %}
+{{i}} => <font color="red">FATAL</font>: /home not mounted on separate mount point!<br/>
+{% else %}
+{{i}} => <font color="green">OK</font>: /home mounted on separate mount point!<br>
+{% endfor %}
+</ul><br/>
+
+======================================================<br/>
+<h3><u>Sec A-10 Ensure|Add nodev Option to /home</u><br/></h3>
+<ul>
+{% for i in play_hosts  %}
+{{i}} => <font color="blue">INFO</font>: Ansible auto remediation if wrong state detected only-if Sec A-9 is true!<br/>
+{% endfor %}
+</ul><br/>
+
+======================================================<br/>
+<h3><u>Sec A-11-12-13 Ensure|nodev,nosuid,noexec option for /dev/shm Partition</u><br/></h3>
+<ul>
+{% for i in play_hosts  %}
+{{i}} => <font color="blue">INFO</font>: Ansible auto remediation if wrong state detected!<br/>
+{% endfor %}
+</ul><br/>
+
+
+######################################################<br/>
+
+
+<h2><u><b>Section F.</b></u><br/></h2>
+
+<h3><u>Sec F-1: Ensure Password Fields are Not Empty.</u><br/></h3>
+List of user(s) with no password (if any):<br/>
+<ul>
 {% for i in play_hosts if hostvars[i].secf_1_out  %}
-{{i}} =>
-{{hostvars[i].secf_1_out}}
-
+{{i}} => <font color="red">FATAL</font>: {{hostvars[i].secf_1_out}} <br/>
 {% endfor %}
-======================================================
+</ul><br/>
 
-TASK 2: Verify No Legacy "+" entries exist in /etc/passwd, /etc/shadow and /etc/group
-/etc/passwd (if any):
-{% for i in play_hosts if hostvars[i].secf_2a_out  %}
-{{i}} =>
-{{hostvars[i].secf_2a_out}}
+======================================================<br/>
+<h3><u>Sec F-2: Verify No Legacy "+" entries exist in /etc/passwd, /etc/shadow and /etc/group</u><br/></h3>
+/etc/passwd, /etc/shadow and /etc/group :<br/>
+<ul>
+{% for i in play_hosts %}
+{{i}} => <font color="blue">INFO</font>: Ansible remediated if wrong state detected!<br/>
 {% endfor %}
+</ul><br/>
 
-/etc/shadow (if any):
-{% for i in play_hosts if hostvars[i].secf_2b_out  %}
-{{i}} =>
-{{hostvars[i].secf_2b_out}}
-{% endfor %}
-
-/etc/group (if any):
-{% for i in play_hosts if hostvars[i].secf_2c_out  %}
-{{i}} =>
-{{hostvars[i].secf_2b_out}}
-{% endfor %}
-======================================================
-
-TASK 3: Verify No UID 0 Accounts Exist Other Than root
-Account with UID 0 (if any):
+======================================================<br/>
+<h3><u>Sec F-3: Verify No UID 0 Accounts Exist Other Than root</u><br/></h3>
+Account with UID 0 (if any):<br/>
+<ul>
 {% for i in play_hosts if hostvars[i].secf_3_out  %}
-{{i}} =>
-{{hostvars[i].secf_3_out}}
+{{i}} => <font color="red">FATAL</font>: {{hostvars[i].secf_3_out}}<br/>
 {% endfor %}
-====================================================== 
+<ul/><br/>
 
-TASK 4: Ensure root PATH Integrity
-Listing of empty path "::", trailing path ":$" or "." (if any):
+======================================================<br/>
+<h3><u>Sec F-4: Ensure root PATH Integrity</u><br/></h3>
+Listing of empty path "::", trailing path ":$" or "." (if any):<br/>
+<ul>
 {% for i in play_hosts if hostvars[i].secf_4a_out  %}
-{{i}} =>
-{{hostvars[i].secf_4a_out}}
+{{i}} => <font color="red">FATAL</font>: {{hostvars[i].secf_4a_out}} <br/>
 {% endfor %}
-
-
+<ul/>
+</header>
+</body>
+</html>
 
