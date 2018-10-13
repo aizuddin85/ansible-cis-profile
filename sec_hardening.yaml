@@ -4,6 +4,7 @@
   vars:
     remediate: "true"
     report_dir: "~/report"
+    report_server: "bastion.bytewise.com.my"
     ntpserver: localhost
     # Generated using 'grub2-mkpasswd-pbkdf2, better to use vault'
     bootloader_pbkdf2_passwd: "grub.pbkdf2.sha512.10000.324A68DBEE637DCBF716365AAA012CD97E4CC098499ED77D4FB0ACF9895C37FF8408B3CCA3538796629F2F87F280BEA3991FD083883C697D303C7708705243A8.899B5228D719D12D467F43D6014F34C45BCEACAEA16E44CFBF8C14A93D1A88804CB81FAF4E0E0ADFED85EB576E68DF4E4C928FBCEE5FA331C6AB642089BED1D9"
@@ -14,7 +15,7 @@
     - { role: section_f }
   tasks:
     - name: Generate run report
-      delegate_to: localhost
+      delegate_to: "{{ report_server }}"
       template:
         src: report.j2
         dest: '{{ folder_info.path }}/report.html'

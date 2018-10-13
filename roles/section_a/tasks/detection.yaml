@@ -183,7 +183,7 @@
 
     - name: Sec A-25-26 Ensure|Set User/Group Owner on /boot/grub2/grub.cfg
       file:
-        path: /etc/grub2.cfg
+        path: /boot/grub2/grub.cfg
         owner: root
         group: root
         mode: 0644
@@ -195,7 +195,7 @@
         mode: 0600
         owner: root
         group: root
-        content: "{{ bootloader_pbkdf2_passwd }}"
+        content: "GRUB2_PASSWORD={{ bootloader_pbkdf2_passwd }}"
       when: remediate
 
     - name: Sec A-28-A Ensure|Restrict Core Dumps
